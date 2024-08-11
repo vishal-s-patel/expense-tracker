@@ -4,50 +4,62 @@ import Header from "./components/Header";
 import TransctionList from "./components/Transactions";
 
 function App() {
-  const [totalExpense, setTotalExpense] = useState(0);
   const [amount, setAmount] = useState("");
-  const [transactionDate, setTransactionDate] = useState("");
+  const [transactionDate, setTransactionDate] = useState();
   const [description, setDescription] = useState("");
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState(() => {
+    return JSON.parse(localStorage.getItem("TRANSACTIONS")) || [];
+  });
   function handleExpense() {
-    const transction = { description, amount, transactionDate };
+    const transction = {
+      description,
+      amount,
+      transactionDate: transactionDate || new Date().toLocaleDateString(),
+    };
     setTransactions([...transactions, transction]);
-    setTotalExpense((total) => total + Number(amount));
     setAmount("");
     setTransactionDate("");
     setDescription("");
   }
+
+  localStorage.setItem("TRANSACTIONS", JSON.stringify(transactions));
+
+  const totalExpense = transactions.reduce(
+    (acc, curr) => acc + Number(curr.amount),
+    0
+  );
+
   return (
     <>
       <Header />
       <div className="mx-5">
-        <p className="bg-gradient-to-tr from-indigo-500 to-red-400 text-white  p-2 rounded-lg">
-          <span className="block text-sm font-medium">Total Expenses:</span>
-          <span className="font-semibold">{totalExpense} ₹</span>
+        <p className="bg-gradient-to-tr from-indigo-500 to-red-400 text-white  p-3 rounded-lg">
+          <span className="block text-base font-medium">Total Expenses:</span>
+          <span className="font-semibold text-2xl">{totalExpense} ₹</span>
         </p>
         <div className="flex items-center mt-2">
           <div className="w-1/2 me-1">
-            <label htmlFor="transactionDate" className="text-xs block">
+            <label htmlFor="transactionDate" className="text-sm block">
               Date:
             </label>
             <input
               type="date"
-              className="border w-full rounded-md p-1 text-sm"
+              className="border w-full rounded-md p-2 text-sm"
               id="transactionDate"
               value={transactionDate}
               onChange={(e) => setTransactionDate(e.target.value)}
             />
           </div>
           <div className="w-1/2">
-            <label htmlFor="amount" className="text-xs block">
+            <label htmlFor="amount" className="text-sm block">
               Amount:
             </label>
             <input
-              type="text"
+              type="number"
               placeholder="00"
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="border rounded-md p-1 w-full text-sm"
+              onChange={(e) => setAmount(e.target.value || "")}
+              className="border rounded-md p-2 w-full text-sm"
               id="amount"
             />
           </div>
@@ -56,7 +68,7 @@ function App() {
           <input
             type="text"
             placeholder="Add a note"
-            className="w-full border rounded-md p-1 text-sm"
+            className="w-full border rounded-md p-2 text-sm"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
